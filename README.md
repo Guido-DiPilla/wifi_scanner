@@ -44,6 +44,14 @@ python wifi_scanner.py
 > and caches them from `standards-oui.ieee.org` to `~/.cache/wifi_scanner/ieee/` on first run.
 > System databases (wireshark-common, ieee-data) serve as automatic fallback if downloads fail.
 
+## Screenshots
+
+### Main Window – Live Network List & Stats
+<img src="screenshots/main_window.png" width="900" alt="Wi-Fi Scanner main window showing live network list, signal strength histogram, and channel distribution" />
+
+### Detail Panel – Comprehensive Network Information
+<img src="screenshots/detail_panel.png" width="900" alt="Wi-Fi Scanner detail panel showing connection status, IP/DNS info, signal history, and network details" />
+
 ## Features
 
 ### Core Functionality
