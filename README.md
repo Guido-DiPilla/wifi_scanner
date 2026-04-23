@@ -52,6 +52,9 @@ python wifi_scanner.py
 ### Detail Panel – Comprehensive Network Information
 <img src="screenshots/detail_panel.png" width="900" alt="Wi-Fi Scanner detail panel showing connection status, IP/DNS info, signal history, and network details" />
 
+### WiFi Adapter Information – Hardware Details
+<img src="screenshots/adapter_info.png" width="900" alt="Wi-Fi Scanner adapter panel showing device name, MAC address, driver info, supported standards, and capabilities" />
+
 ## Features
 
 ### Core Functionality
@@ -73,7 +76,8 @@ python wifi_scanner.py
   - `Up/Down` navigate networks
   - `Enter` show selected network details
 - **WiFi Adapter Information** - View comprehensive hardware details (⚙ Adapter button)
-  - Device name and driver information
+  - Device name and MAC address
+  - Driver information
   - Firmware version
   - Supported frequency bands (2.4 GHz, 5 GHz, 6 GHz)
   - Supported WiFi standards (802.11a/b/g/n/ac/ax/be)
