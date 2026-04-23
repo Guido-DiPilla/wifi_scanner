@@ -139,7 +139,6 @@ python wifi_scanner.py
 - **Vertical scrolling** - Use mouse wheel or trackpad to scroll through all fields
 - **Horizontal scrolling** - Long values (like vendor names) are scrollable horizontally
 - **Expandable** - The detail panel auto-expands to show all information
-- **Last Seen** - Time since network was last detected
 
 ### Statistics Panel
 
