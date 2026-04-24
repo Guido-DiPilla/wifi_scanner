@@ -11,6 +11,7 @@ from ui_utils import enable_mousewheel_scrolling
 
 
 def _add_section_title(parent, title: str, top_padding: int):
+    """Render a section heading inside the help dialog."""
     ctk.CTkLabel(
         parent,
         text=title,
@@ -21,6 +22,7 @@ def _add_section_title(parent, title: str, top_padding: int):
 
 
 def _add_section_lines(parent, lines: list[str]):
+    """Render each help bullet line as a left-aligned label."""
     for line in lines:
         ctk.CTkLabel(
             parent,

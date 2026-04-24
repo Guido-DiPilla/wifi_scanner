@@ -27,6 +27,8 @@ from config import (
 
 @dataclass
 class WifiNetwork:
+    """Normalized representation of one scanned Wi-Fi network."""
+
     ssid: str
     bssid: str
     mode: str
@@ -47,15 +49,18 @@ class WifiNetwork:
 
     @cached_property
     def vendor(self) -> str:
+        """Return vendor/manufacturer name resolved from BSSID prefix."""
         return get_vendor(self.bssid)
 
     @property
     def signal_dbm(self) -> str:
+        """Estimate RSSI in dBm from nmcli percentage signal value."""
         dbm = -100 + (self.signal / 2)
         return f"{dbm:.0f} dBm"
 
     @property
     def band(self) -> str:
+        """Return frequency band label derived from network frequency."""
         try:
             if "GHz" in self.frequency:
                 freq_mhz = float(self.frequency.replace(" GHz", "").strip()) * 1000
@@ -71,6 +76,7 @@ class WifiNetwork:
 
     @property
     def quality_label(self) -> str:
+        """Return a human-friendly quality tier from signal percentage."""
         if self.signal >= 80:
             return "Excellent"
         if self.signal >= 60:
@@ -81,6 +87,7 @@ class WifiNetwork:
 
     @property
     def quality_color(self) -> str:
+        """Return UI color associated with current signal quality tier."""
         if self.signal >= 80:
             return "#00e676"
         if self.signal >= 60:
@@ -91,6 +98,7 @@ class WifiNetwork:
 
     @property
     def bandwidth_mhz(self) -> int:
+        """Return parsed channel width in MHz, defaulting to 20."""
         try:
             return int(self.bandwidth.split()[0]) if self.bandwidth else 20
         except (ValueError, IndexError):
@@ -98,6 +106,7 @@ class WifiNetwork:
 
     @property
     def theoretical_max_speed(self) -> str:
+        """Estimate practical throughput from link rate and efficiency factor."""
         try:
             rate_val = float(self.rate.split()[0]) if self.rate else 0.0
         except (ValueError, IndexError):
@@ -109,6 +118,7 @@ class WifiNetwork:
 
     @property
     def quality_score(self) -> int:
+        """Compute a weighted 0-100 score using signal, security, and congestion."""
         score = self.signal * SIGNAL_WEIGHT
         if "WPA3" in self.security:
             score += WPA3_BONUS
@@ -135,6 +145,7 @@ class WifiNetwork:
 
     @property
     def encryption_type(self) -> str:
+        """Return normalized encryption classification for display."""
         if "WPA3" in self.rsn_flags or "WPA3" in self.security:
             return "WPA3 (Modern)"
         if "WPA2" in self.security or "802.1X" in self.rsn_flags:
@@ -147,6 +158,7 @@ class WifiNetwork:
 
     @property
     def last_seen_str(self) -> str:
+        """Return relative time since this network was last observed."""
         if self.last_seen == 0:
             return "Just now"
         elapsed = time.time() - self.last_seen

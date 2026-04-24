@@ -44,6 +44,7 @@ _IEEE_REMOTE_SOURCES: tuple[tuple[str, str], ...] = (
 
 
 def _normalize_oui(raw: str) -> str | None:
+    """Normalize raw OUI token into canonical AA:BB:CC form."""
     cleaned = raw.strip().replace("-", ":").replace(".", "").upper()
     if len(cleaned) == 8 and cleaned.count(":") == 2:
         return cleaned
@@ -53,10 +54,12 @@ def _normalize_oui(raw: str) -> str | None:
 
 
 def _cache_ieee_paths() -> tuple[Path, ...]:
+    """Return local cache file paths for downloaded IEEE registries."""
     return tuple(_CACHE_DIR / name for name, _url in _IEEE_REMOTE_SOURCES)
 
 
 def _ieee_oui_paths() -> tuple[Path, ...]:
+    """Return cache paths first, then system IEEE database paths."""
     cache_paths = tuple(path for path in _cache_ieee_paths() if path.exists())
     return cache_paths + _SYSTEM_IEEE_OUI_PATHS
 
@@ -163,10 +166,12 @@ def _parse_ieee_base16_range(raw: str, oui24_value: int | None) -> tuple[int, in
 
 
 def _mac_int_to_oui(mac_int: int) -> str:
+    """Convert 48-bit MAC integer to 24-bit OUI string."""
     return f"{(mac_int >> 40) & 0xFF:02X}:{(mac_int >> 32) & 0xFF:02X}:{(mac_int >> 24) & 0xFF:02X}"
 
 
 def _bssid_to_mac_int(bssid: str) -> int | None:
+    """Parse a BSSID string into a 48-bit integer, if valid."""
     cleaned = "".join(ch for ch in bssid.upper() if ch in _HEX_CHARS)
     if len(cleaned) < 12:
         return None
@@ -177,6 +182,7 @@ def _bssid_to_mac_int(bssid: str) -> int | None:
 
 
 def _load_wireshark_manuf() -> tuple[dict[str, str], list[PrefixEntry], Path | None]:
+    """Load vendor prefixes from Wireshark manuf files when available."""
     for path in _MANUF_PATHS:
         if path.exists():
             exact_db: dict[str, str] = {}
@@ -212,6 +218,7 @@ def _load_wireshark_manuf() -> tuple[dict[str, str], list[PrefixEntry], Path | N
 
 
 def _load_ieee_oui() -> tuple[dict[str, str], Path | None]:
+    """Load OUI/vendor mappings from IEEE registry text files."""
     db: dict[str, str] = {}
     selected_path: Path | None = None
     for path in _ieee_oui_paths():
@@ -265,6 +272,7 @@ def _load_ieee_oui() -> tuple[dict[str, str], Path | None]:
 
 
 def _load_system_oui_db() -> tuple[dict[str, str], list[PrefixEntry], Path | None]:
+    """Load vendor DB from best available source (Wireshark, then IEEE)."""
     wireshark_db, wireshark_prefixes, wireshark_path = _load_wireshark_manuf()
     if wireshark_db or wireshark_prefixes:
         return wireshark_db, wireshark_prefixes, wireshark_path
@@ -282,11 +290,13 @@ def _load_system_oui_db() -> tuple[dict[str, str], list[PrefixEntry], Path | Non
 
 
 def _reload_vendor_state() -> None:
+    """Refresh module-level vendor lookup state from disk sources."""
     global _OUI_DB, _OUI_PREFIX_DB, _OUI_DB_PATH
     _OUI_DB, _OUI_PREFIX_DB, _OUI_DB_PATH = _load_system_oui_db()
 
 
 def _best_prefix_vendor(mac_int: int) -> str | None:
+    """Return vendor matched by the longest prefix entry for a MAC."""
     # _OUI_PREFIX_DB is sorted by prefix_bits descending, so the first match
     # is always the longest (most specific) prefix — return immediately.
     for entry in _OUI_PREFIX_DB:
@@ -315,14 +325,17 @@ def reload_vendor_database(force_refresh: bool = False) -> bool:
 
 
 def is_system_manuf_loaded() -> bool:
+    """Return True when any vendor mapping data is currently loaded."""
     return bool(_OUI_DB or _OUI_PREFIX_DB)
 
 
 def system_manuf_path() -> str | None:
+    """Return path of the vendor database source file in use, if known."""
     return str(_OUI_DB_PATH) if _OUI_DB_PATH else None
 
 
 def get_vendor(bssid: str) -> str:
+    """Resolve manufacturer name for a BSSID, defaulting to Unknown."""
     mac_int = _bssid_to_mac_int(bssid)
     if mac_int is None:
         return "Unknown"

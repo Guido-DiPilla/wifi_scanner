@@ -32,6 +32,7 @@ def split_escaped(text: str, sep: str = ":") -> list[str]:
 
 
 def _to_int(value: str, default: int = 0) -> int:
+    """Safely cast to int, returning *default* on conversion failure."""
     try:
         return int(value)
     except (TypeError, ValueError):

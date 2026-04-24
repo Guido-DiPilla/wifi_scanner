@@ -8,6 +8,8 @@ from wifi_core.runner import CommandNotFoundError, CommandRunner, CommandTimeout
 
 
 class AdapterInfo(TypedDict):
+    """Structured snapshot of Wi-Fi adapter properties and capabilities."""
+
     device: str
     mac_address: str
     driver: str
@@ -29,6 +31,7 @@ _DEFAULT_RUNNER = CommandRunner()
 def _safe_run_text(
     argv: list[str], timeout: int, runner: CommandRunner
 ) -> tuple[int, str, str]:
+    """Run a command and return fallback empty output on tool/timeout errors."""
     try:
         result = runner.run(argv, timeout=timeout)
         return result.returncode, result.stdout, result.stderr
@@ -37,6 +40,7 @@ def _safe_run_text(
 
 
 def _detect_supported_bands(output: str) -> list[str]:
+    """Infer supported RF bands from iw phy output."""
     bands: list[str] = []
     if any(freq in output for freq in ("2412", "2417", "2437")):
         bands.append("2.4 GHz")
@@ -48,6 +52,7 @@ def _detect_supported_bands(output: str) -> list[str]:
 
 
 def _detect_supported_standards(output: str) -> list[str]:
+    """Infer supported Wi-Fi standards from capability flags."""
     standards = set()
     if "HT20" in output or "HT40" in output:
         standards.add("802.11n (WiFi 4)")
@@ -63,6 +68,7 @@ def _detect_supported_standards(output: str) -> list[str]:
 
 
 def _detect_capabilities(output: str) -> list[str]:
+    """Extract notable adapter features from iw capability text."""
     capabilities: list[str] = []
     if "MU-MIMO" in output or "SU Beamformee" in output:
         capabilities.append("MU-MIMO")
@@ -84,6 +90,7 @@ def _detect_capabilities(output: str) -> list[str]:
 
 
 def get_wifi_adapter_info(runner: CommandRunner | None = None) -> AdapterInfo:
+    """Collect adapter identity, driver data, and wireless capabilities."""
     active_runner = runner or _DEFAULT_RUNNER
     info: AdapterInfo = {
         "device": "",

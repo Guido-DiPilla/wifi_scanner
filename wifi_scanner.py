@@ -60,6 +60,8 @@ from ui_dialogs import (
 
 
 class WifiScannerApp(ctk.CTk):
+    """Main application window coordinating scanning, rendering, and actions."""
+
     def __init__(self):
         super().__init__()
         ctk.set_appearance_mode("dark")
@@ -91,14 +93,17 @@ class WifiScannerApp(ctk.CTk):
         self._start_scan()
 
     def _fira_font(self, size: int, weight: Literal["normal", "bold"] | None = None) -> ctk.CTkFont:
+        """Create a configured body font used across this window."""
         return _fira_font_fn(size, weight)
 
     def _barlow_font(self, size: int, weight: Literal["normal", "bold"] = "bold") -> ctk.CTkFont:
+        """Create a configured title font used across this window."""
         return _barlow_font_fn(size, weight)
 
     # ── UI construction ──────────────────────────────────────────────────────
 
     def _build_ui(self):
+        """Build the top bar, list area, stats panel, and detail panel."""
         topbar = self._build_topbar()
         self._build_topbar_title(topbar)
         self._build_topbar_controls(topbar)
@@ -109,12 +114,14 @@ class WifiScannerApp(ctk.CTk):
         self._build_detail_panel(main)
 
     def _build_topbar(self) -> ctk.CTkFrame:
+        """Create and return the fixed top toolbar container."""
         topbar = ctk.CTkFrame(self, fg_color=BG_CARD, height=TOPBAR_HEIGHT, corner_radius=0)
         topbar.pack(fill="x", side="top")
         topbar.pack_propagate(False)
         return topbar
 
     def _build_topbar_title(self, topbar: ctk.CTkFrame):
+        """Render the app icon, title, and version text in the top bar."""
         # Load wifi icon
         icon_path = Path(__file__).parent / "wifi.png"
         if icon_path.exists():
@@ -142,6 +149,7 @@ class WifiScannerApp(ctk.CTk):
         ).pack(anchor="w")
 
     def _build_topbar_controls(self, topbar: ctk.CTkFrame):
+        """Render filter, refresh, adapter, and help controls in the top bar."""
         # Search bar
         self._search_entry = ctk.CTkEntry(
             topbar, textvariable=self._filter_text,
@@ -238,7 +246,7 @@ class WifiScannerApp(ctk.CTk):
         self._status_lbl.pack(side="right", padx=(0, 10))
 
     def _build_main_area(self) -> ctk.CTkFrame:
-        # ── Main area ──
+        """Create the main two-column layout container."""
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=12, pady=12)
         # Keep list column near its natural table width and give extra space to details.
@@ -249,12 +257,12 @@ class WifiScannerApp(ctk.CTk):
         return main
 
     def _build_stats_panel(self, main: ctk.CTkFrame):
-        # ── Statistics panel ──
+        """Create and place the summary statistics panel."""
         self._stats_panel = StatsPanel(main)
         self._stats_panel.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 8))
 
     def _build_list_panel(self, main: ctk.CTkFrame):
-        # ── Network list ──
+        """Create the network table area and attach scrolling behavior."""
         list_frame = ctk.CTkFrame(main, fg_color="transparent")
         list_frame.grid(row=1, column=0, sticky="nsew", padx=(0, 8))
         list_frame.rowconfigure(1, weight=1)
@@ -287,7 +295,7 @@ class WifiScannerApp(ctk.CTk):
         bind_mousewheel_scrolling(list_frame, self._scroll_list_from_event)
 
     def _build_list_headers(self, list_frame: ctk.CTkFrame):
-        # Column headers
+        """Build sortable list column headers and bind click handlers."""
         header_frame = ctk.CTkFrame(list_frame, fg_color=BG_CARD, corner_radius=6)
         header_frame.grid(row=0, column=0, sticky="ew", pady=(0, 4))
 
@@ -331,7 +339,7 @@ class WifiScannerApp(ctk.CTk):
             self._hdr_labels[key] = label
 
     def _build_detail_panel(self, main: ctk.CTkFrame):
-        # ── Detail panel ──
+        """Create and place the network detail panel."""
         self._detail = DetailPanel(main, width=DETAIL_PANEL_WIDTH)
         self._detail.grid(row=1, column=1, sticky="nsew")
 
@@ -351,6 +359,7 @@ class WifiScannerApp(ctk.CTk):
         return self._SORT_KEYS.get(self._sort_col, lambda n: n.signal)(net)
 
     def _matches_filter(self, net: WifiNetwork, query: str) -> bool:
+        """Return True when a network matches the active search query."""
         if not query:
             return True
         return (
@@ -361,6 +370,7 @@ class WifiScannerApp(ctk.CTk):
         )
 
     def _visible_networks(self) -> list[WifiNetwork]:
+        """Return filtered and sorted networks for the current UI state."""
         query = self._filter_text.get().lower()
         filtered = [n for n in self._networks if self._matches_filter(n, query)]
         return sorted(filtered, key=self._get_sort_key, reverse=self._sort_rev)
@@ -370,12 +380,14 @@ class WifiScannerApp(ctk.CTk):
         bssid: str | None,
         networks: list[WifiNetwork] | None = None,
     ) -> WifiNetwork | None:
+        """Find a network by BSSID in the provided list or current state."""
         if not bssid:
             return None
         candidates = networks if networks is not None else self._networks
         return next((n for n in candidates if n.bssid == bssid), None)
 
     def _render_list(self):
+        """Rebuild the visible network row widgets from filtered data."""
         for w in self._list_inner.winfo_children():
             w.destroy()
         self._row_widgets = {}
@@ -394,6 +406,7 @@ class WifiScannerApp(ctk.CTk):
             self._build_network_row(net, i)
 
     def _build_network_row(self, net: WifiNetwork, idx: int) -> None:
+        """Instantiate and register one table row for a network."""
         row = NetworkRow(
             self._list_inner,
             net=net,
@@ -405,6 +418,7 @@ class WifiScannerApp(ctk.CTk):
         self._row_widgets[net.bssid] = row
 
     def _on_network_select(self, _event, net: WifiNetwork) -> None:
+        """Handle row selection and refresh details for the chosen network."""
         prev_bssid = self._selected_bssid
         self._selected_bssid = net.bssid
         self._refresh_selection_highlight(prev_bssid)
@@ -414,11 +428,13 @@ class WifiScannerApp(ctk.CTk):
         )
 
     def _set_row_selected(self, bssid: str, selected: bool) -> None:
+        """Toggle selected state for a rendered row, if present."""
         row = self._row_widgets.get(bssid)
         if row:
             row.set_selected(selected)
 
     def _refresh_selection_highlight(self, previous_bssid: str | None = None) -> None:
+        """Update row highlight state after selection changes."""
         if previous_bssid and previous_bssid != self._selected_bssid:
             self._set_row_selected(previous_bssid, False)
         if self._selected_bssid:
@@ -493,11 +509,13 @@ class WifiScannerApp(ctk.CTk):
         help.show_help(self)
 
     def _show_adapter_info(self):
+        """Open the adapter capabilities dialog."""
         show_adapter_info(self)
 
     # ── Scanning ─────────────────────────────────────────────────────────────
 
     def _start_scan(self):
+        """Trigger a background Wi-Fi scan if one is not already running."""
         if self._scanning:
             return
 
@@ -509,6 +527,7 @@ class WifiScannerApp(ctk.CTk):
         threading.Thread(target=self._do_scan, daemon=True).start()
 
     def _do_scan(self):
+        """Run scan service on a worker thread and marshal result to UI thread."""
         try:
             networks = scan_wifi()
             self.after(0, self._on_scan_complete, networks, None)
@@ -516,6 +535,7 @@ class WifiScannerApp(ctk.CTk):
             self.after(0, self._on_scan_complete, [], str(e))
 
     def _on_scan_complete(self, networks: list[WifiNetwork], error: str | None):
+        """Apply scan results, refresh UI state, and schedule next auto scan."""
         self._scanning = False
         self._scan_btn.configure(text="↻  Scan", text_color=BG_DARK, fg_color=ACCENT)
         self._last_scan_time = time.time()
@@ -550,6 +570,7 @@ class WifiScannerApp(ctk.CTk):
             self._schedule_countdown()
 
     def _schedule_countdown(self):
+        """Update next-scan countdown once per second while auto-refresh is on."""
         def tick():
             if not self._auto_refresh.get() or self._scanning:
                 return
@@ -577,6 +598,7 @@ class WifiScannerApp(ctk.CTk):
                 pass
 
     def _set_sort(self, col: str):
+        """Set or toggle list sort order, then re-render visible rows."""
         if self._sort_col == col:
             self._sort_rev = not self._sort_rev
         else:
@@ -586,6 +608,7 @@ class WifiScannerApp(ctk.CTk):
         self._render_list()
 
     def _on_filter_change(self, *args):
+        """Re-render list when filter text changes."""
         self._render_list()
 
     def _on_interval_change(self, *args):
@@ -638,6 +661,7 @@ class WifiScannerApp(ctk.CTk):
             self._do_connect(net.ssid, net.bssid, None)
 
     def _show_password_dialog(self, net: WifiNetwork):
+        """Open the password prompt dialog for a protected network."""
         show_password_dialog(self, net, self._do_connect)
 
     def _run_async_nm_action(
@@ -654,6 +678,7 @@ class WifiScannerApp(ctk.CTk):
         success_refresh_delay_ms: int | None = None,
         on_failure: Callable[[str], bool] | None = None,
     ):
+        """Execute a NetworkManager action asynchronously and handle UI updates."""
         def worker():
             try:
                 result = action()
@@ -735,6 +760,7 @@ class WifiScannerApp(ctk.CTk):
         )
 
     def _connect_to_hidden_network(self):
+        """Open the hidden-network connect dialog."""
         show_hidden_network_dialog(self, self._do_connect)
 
     def _show_connection_status(self, message: str, success: bool | None):
@@ -749,6 +775,7 @@ class WifiScannerApp(ctk.CTk):
         self._status_lbl.configure(text=message, text_color=color)
 
     def _scroll_units_from_event(self, event) -> int:
+        """Normalize platform-specific wheel events into +/- unit steps."""
         if event.num == 4:
             return -1
         if event.num == 5:
@@ -762,6 +789,7 @@ class WifiScannerApp(ctk.CTk):
         return 0
 
     def _scroll_list_from_event(self, event):
+        """Scroll the network list canvas from routed wheel events."""
         units = self._scroll_units_from_event(event)
         if units:
             self._list_canvas.yview_scroll(units, "units")

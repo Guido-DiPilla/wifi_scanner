@@ -15,6 +15,7 @@ _DEFAULT_RUNNER = CommandRunner()
 
 
 def get_saved_password(ssid: str, runner: CommandRunner | None = None) -> str:
+    """Return saved PSK for an SSID from NetworkManager, if available."""
     if not ssid or ssid == "<hidden>":
         return ""
 
@@ -83,6 +84,7 @@ def get_public_ip() -> str:
 
 
 def scan_wifi(runner: CommandRunner | None = None) -> list[WifiNetwork]:
+    """Scan nearby Wi-Fi networks and return parsed, de-duplicated results."""
     active_runner = runner or _DEFAULT_RUNNER
     try:
         result = active_runner.run(

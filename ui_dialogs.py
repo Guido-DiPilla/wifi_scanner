@@ -46,6 +46,7 @@ from wifi_core.models import WifiNetwork
 
 
 def _center_dialog_on_parent(parent: ctk.CTk, dialog: ctk.CTkToplevel, width: int, height: int) -> None:
+    """Center a dialog window over its parent using current geometry."""
     dialog.update_idletasks()
     x = parent.winfo_x() + (parent.winfo_width() // 2) - (width // 2)
     y = parent.winfo_y() + (parent.winfo_height() // 2) - (height // 2)
@@ -60,6 +61,7 @@ def _create_action_button(
     primary: bool,
     width: int = 100,
 ):
+    """Create a consistently styled dialog action button."""
     font = _fira_font(11, "bold" if primary else "normal")
     return ctk.CTkButton(
         parent,

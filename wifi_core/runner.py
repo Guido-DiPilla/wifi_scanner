@@ -33,9 +33,11 @@ class CommandRunner:
     """Thin wrapper around subprocess for consistent command handling."""
 
     def command_exists(self, executable: str) -> bool:
+        """Return True when an executable is available on PATH."""
         return shutil.which(executable) is not None
 
     def run(self, argv: Sequence[str], timeout: int) -> CommandResult:
+        """Execute a command and return captured output or raise typed errors."""
         try:
             proc = subprocess.run(
                 list(argv),

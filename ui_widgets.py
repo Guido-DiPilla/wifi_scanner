@@ -54,6 +54,7 @@ class SignalBar(tk.Canvas):
         self._draw(signal, color)
 
     def _draw(self, signal: int, color: str):
+        """Render the bar graph based on the current signal percentage."""
         self.delete("all")
         num_bars = 4
         bar_w = 7
@@ -122,13 +123,16 @@ class SelectableText(tk.Text):
         self.configure(state="disabled")
 
     def _focus_for_selection(self, _event):
+        """Ensure widget has focus before text selection starts."""
         self.focus_set()
 
     def _copy_selection(self, _event):
+        """Handle Ctrl+C copy for selected text and consume the event."""
         self._copy_selected_text()
         return "break"
 
     def _show_context_menu(self, event):
+        """Show the custom context menu with Copy and Select All actions."""
         self.focus_set()
         self._dismiss_context_menu()
 
@@ -195,6 +199,7 @@ class SelectableText(tk.Text):
                 self._ctx_popup_bind_ids.append((widget, sequence, bind_id))
 
     def _dismiss_context_menu(self):
+        """Dismiss the context menu and remove temporary global bindings."""
         for widget, sequence, bind_id in self._ctx_popup_bind_ids:
             try:
                 widget.unbind(sequence, bind_id)
@@ -211,22 +216,26 @@ class SelectableText(tk.Text):
             self._ctx_popup = None
 
     def _copy_selected_text(self):
+        """Copy the selected text range to the clipboard, if any."""
         if self.tag_ranges("sel"):
             self.clipboard_clear()
             self.clipboard_append(self.get("sel.first", "sel.last"))
 
     def _select_all_command(self):
+        """Select the entire widget content and move insertion point to start."""
         self.focus_set()
         self.tag_add("sel", "1.0", "end-1c")
         self.mark_set("insert", "1.0")
         self.see("insert")
 
     def _select_all(self, _event):
+        """Handle Ctrl+A selection and consume the event."""
         self.focus_set()
         self._select_all_command()
         return "break"
 
     def set_value(self, text: str, text_color: str | None = None):
+        """Replace widget content and optionally override the foreground color."""
         self.configure(state="normal")
         self.configure(font=self._font)
         self.delete("1.0", "end")
@@ -238,6 +247,7 @@ class SelectableText(tk.Text):
             self.after_idle(self._adjust_height)
 
     def _adjust_height(self):
+        """Auto-size widget height to fit visible wrapped lines."""
         text = self.get("1.0", "end-1c")
         if not text:
             display_lines = self._min_lines
@@ -375,6 +385,7 @@ class NetworkRow(tk.Frame):
         self._bind_descendants()
 
     def _bind_descendants(self) -> None:
+        """Attach hover/select/right-click handlers to row and child widgets."""
         def on_enter(_event):
             self._set_hover(True)
 
@@ -397,6 +408,7 @@ class NetworkRow(tk.Frame):
             stack.extend(widget.winfo_children())
 
     def _apply_background(self, bg: str) -> None:
+        """Apply row background color while preserving indicator behavior."""
         for child in self.winfo_children():
             if child is self.indicator:
                 continue
@@ -412,10 +424,12 @@ class NetworkRow(tk.Frame):
         self.configure(bg=bg)
 
     def _set_hover(self, hovered: bool) -> None:
+        """Switch row background between base, selected, and hover states."""
         bg = self.selected_hover_bg if (hovered and self.selected) else self.hover_bg if hovered else self.selected_bg if self.selected else self.base_bg
         self._apply_background(bg)
 
     def set_selected(self, selected: bool) -> None:
+        """Update selected state and redraw row styling accordingly."""
         self.selected = selected
         if selected:
             self.configure(
@@ -439,6 +453,7 @@ class SignalHistoryChart(tk.Canvas):
     _PAD_R = 6
 
     def __init__(self, parent, **kwargs):
+        """Initialize an empty chart and redraw when size changes."""
         super().__init__(
             parent,
             bg=BG_ROW,
@@ -450,10 +465,12 @@ class SignalHistoryChart(tk.Canvas):
         self.bind("<Configure>", lambda _e: self._redraw())
 
     def set_data(self, data: list[tuple[float, int]]) -> None:
+        """Store chart samples and trigger a redraw."""
         self._data = list(data)
         self._redraw()
 
     def _redraw(self) -> None:
+        """Render grid, area fill, line, and points for current samples."""
         self.delete("all")
         w = self.winfo_width()
         h = self.winfo_height()
@@ -515,6 +532,7 @@ class DetailPanel(ctk.CTkFrame):
     """Right-side detail panel for a selected network."""
 
     def __init__(self, parent, **kwargs):
+        """Initialize persistent detail widgets and placeholder overlay."""
         super().__init__(parent, fg_color=BG_CARD, corner_radius=12,
                          border_width=1, border_color=BORDER, **kwargs)
         self._current_password = ""
@@ -641,6 +659,7 @@ class DetailPanel(ctk.CTkFrame):
             self._password_popup = None
 
     def _add_detail_grid_row(self, parent: ctk.CTkFrame, label: str):
+        """Create one label/value row in the details grid."""
         row = ctk.CTkFrame(parent, fg_color="transparent")
         row.pack(fill="x", pady=3)
         ctk.CTkLabel(
@@ -900,15 +919,18 @@ class DetailPanel(ctk.CTkFrame):
         bind_mousewheel_scrolling(canvas, self.scroll_from_event)
 
     def _on_detail_content_configure(self, _event):
+        """Keep canvas scrollregion in sync with content size."""
         self._detail_canvas.configure(scrollregion=self._detail_canvas.bbox("all"))
 
     def _on_detail_canvas_configure(self, event):
+        """Resize embedded content width to match or exceed canvas viewport."""
         target_width = max(event.width, self._detail_content.winfo_reqwidth())
         self._detail_canvas.itemconfigure(self._detail_canvas_window, width=target_width)
         if self._current_net is not None:
             self.after_idle(self._refresh_header_layout)
 
     def _refresh_header_layout(self):
+        """Recompute auto-height header fields after geometry updates."""
         if self._current_net is None:
             return
         self._lbl_ssid._adjust_height()
@@ -1050,6 +1072,7 @@ class DetailPanel(ctk.CTkFrame):
         )
 
     def show(self, net: WifiNetwork):
+        """Display details for the selected network and hide placeholder."""
         self._reset_transient()
         self._populate(net)
         self._placeholder.place_forget()
@@ -1143,6 +1166,7 @@ class StatsPanel(ctk.CTkFrame):
     """Statistics and channel-histogram panel shown above the network list."""
 
     def __init__(self, parent, **kwargs):
+        """Initialize a fixed-height panel used for summary and histogram."""
         super().__init__(parent, fg_color=BG_CARD, corner_radius=8,
                          height=STATS_HEIGHT, **kwargs)
         self.grid_propagate(False)
@@ -1264,6 +1288,7 @@ class StatsPanel(ctk.CTkFrame):
         gap: int,
         label_font_size: int,
     ) -> None:
+        """Draw histogram bars for a channel set within one band segment."""
         x_offset = x_start
         for ch in sorted(int(c) for c in channels if c.isdigit()):
             ch_str = str(ch)

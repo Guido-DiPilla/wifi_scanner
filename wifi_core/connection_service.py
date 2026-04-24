@@ -14,6 +14,7 @@ def _run_nmcli(
     timeout_message: str,
     runner: CommandRunner,
 ) -> CommandResult:
+    """Run an nmcli command and normalize common execution errors."""
     try:
         return runner.run(argv, timeout=timeout)
     except CommandNotFoundError as exc:
@@ -23,6 +24,7 @@ def _run_nmcli(
 
 
 def connect_using_profile(ssid: str, runner: CommandRunner | None = None) -> CommandResult:
+    """Activate an existing NetworkManager connection profile by SSID name."""
     active_runner = runner or _DEFAULT_RUNNER
     return _run_nmcli(
         ["nmcli", "connection", "up", ssid],
@@ -38,6 +40,7 @@ def connect_to_network(
     password: str | None,
     runner: CommandRunner | None = None,
 ) -> CommandResult:
+    """Connect to a network directly, optionally targeting BSSID and password."""
     active_runner = runner or _DEFAULT_RUNNER
     cmd = ["nmcli", "device", "wifi", "connect", bssid if bssid else ssid]
     if password:
@@ -55,6 +58,7 @@ def connect_to_network(
 
 
 def disconnect_current_device(runner: CommandRunner | None = None) -> CommandResult:
+    """Disconnect the active Wi-Fi interface as reported by nmcli."""
     active_runner = runner or _DEFAULT_RUNNER
 
     status = _run_nmcli(
