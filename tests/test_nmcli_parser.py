@@ -77,6 +77,42 @@ class NmcliParserTests(unittest.TestCase):
         assert net is not None
         self.assertIs(net.in_use, False)
 
+    def test_parse_scan_line_maps_all_primary_and_optional_fields(self):
+        ts = 1234.5
+        line = (
+            r"*:Office:AA\:BB\:CC\:DD\:EE\:55:Infra:149:5745 MHz:866 Mbit/s:67:***:WPA2 WPA3:80 MHz:wlan1:sae:pair_ccmp"
+        )
+        net = parse_scan_line(line, ts)
+        self.assertIsNotNone(net)
+        assert net is not None
+
+        self.assertEqual(net.ssid, "Office")
+        self.assertEqual(net.bssid, "AA:BB:CC:DD:EE:55")
+        self.assertEqual(net.mode, "Infra")
+        self.assertEqual(net.channel, "149")
+        self.assertEqual(net.frequency, "5745 MHz")
+        self.assertEqual(net.rate, "866 Mbit/s")
+        self.assertEqual(net.signal, 67)
+        self.assertEqual(net.bars, "***")
+        self.assertEqual(net.security, "WPA2 WPA3")
+        self.assertEqual(net.bandwidth, "80 MHz")
+        self.assertEqual(net.device, "wlan1")
+        self.assertEqual(net.wpa_flags, "sae")
+        self.assertEqual(net.rsn_flags, "pair_ccmp")
+        self.assertTrue(net.in_use)
+        self.assertEqual(net.last_seen, ts)
+        self.assertEqual(net.password, "")
+
+    def test_parse_scan_line_defaults_open_and_20mhz_when_empty(self):
+        line = (
+            r":Cafe:AA\:BB\:CC\:DD\:EE\:66:Infra:6:2437 MHz:130 Mbit/s:55:***:::wlan0:::"
+        )
+        net = parse_scan_line(line, 42.0)
+        self.assertIsNotNone(net)
+        assert net is not None
+        self.assertEqual(net.security, "Open")
+        self.assertEqual(net.bandwidth, "20 MHz")
+
 
 if __name__ == "__main__":
     unittest.main()
