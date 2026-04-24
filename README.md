@@ -133,7 +133,6 @@ python wifi_scanner.py
 - **Quality Score** - Overall network quality rating (0-100)
   - Based on signal, congestion, encryption, and bandwidth
 - **Device** - Network adapter used for detection
-- **Last Seen** - Time since network was last detected
 
 #### Detail Panel Scrolling
 - **Vertical scrolling** - Use mouse wheel or trackpad to scroll through all fields
