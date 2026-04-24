@@ -230,6 +230,38 @@ Notes:
 - Latest pilot baseline: 124 mutants, 117 killed, 7 survived.
 - The remaining 7 survivors in `wifi_core/nmcli_parser.py` are treated as equivalent mutants (default-argument/trampoline semantics and truthiness-equivalent state transitions), so they do not represent observable behavior gaps in runtime code paths.
 
+## Developer Quality Commands
+
+Use these local commands as a lightweight quality gate when working without CI workflows:
+
+```bash
+source venv/bin/activate
+
+# Full test suite with coverage gate from pytest.ini
+pytest -q
+
+# Mutation pilot (focused scope configured in pyproject.toml)
+mutmut run
+
+# Quick mutation summary
+mutmut results
+
+# Show only remaining survivors
+mutmut results | grep survived
+```
+
+## Release Checklist
+
+1. Run `pytest -q` and ensure the coverage gate passes.
+2. Run mutation pilot (`mutmut run`) and confirm no regression from baseline.
+3. Update `VERSION`.
+4. Commit and push.
+5. Tag release (optional, recommended): `git tag v$(cat VERSION) && git push origin --tags`.
+
+### Recent Quality Milestone
+- Property-based tests (Hypothesis), integration fixture tests, and mutation-testing pilot are now in place.
+- Mutation pilot improved from 65 initial survivors to 7 equivalent survivors.
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0**.
