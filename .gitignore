@@ -22,6 +22,8 @@ ENV/
 htmlcov/
 .pytest_cache/
 .tox/
+.mutmut-cache/
+mutants/
 
 # Type checkers / linters
 .mypy_cache/

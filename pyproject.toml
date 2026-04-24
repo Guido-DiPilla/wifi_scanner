@@ -1,0 +1,9 @@
+[tool.mutmut]
+# Keep pilot scope tight so mutation runs remain practical on developer machines.
+paths_to_mutate = ["wifi_core/nmcli_parser.py"]
+also_copy = ["wifi_core/", "config.py", "VERSION"]
+tests_dir = ["tests/test_nmcli_parser.py"]
+pytest_add_cli_args_test_selection = [
+  "tests/test_nmcli_parser.py",
+]
+pytest_add_cli_args = ["-q", "--no-cov"]

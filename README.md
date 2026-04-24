@@ -210,6 +210,24 @@ source venv/bin/activate
 python wifi_scanner.py
 ```
 
+## Mutation Testing (Optional)
+
+This project includes an optional `mutmut` pilot configuration for periodic test-strength checks.
+
+```bash
+source venv/bin/activate
+
+# Run mutation pilot (configured in pyproject.toml)
+mutmut run
+
+# Show summary of survived/killed mutants
+mutmut results
+```
+
+Notes:
+- Mutation testing is intentionally optional and slower than unit tests.
+- Current pilot scope targets `wifi_core/nmcli_parser.py` for fast iterative feedback.
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0**.
