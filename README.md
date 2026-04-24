@@ -227,6 +227,8 @@ mutmut results
 Notes:
 - Mutation testing is intentionally optional and slower than unit tests.
 - Current pilot scope targets `wifi_core/nmcli_parser.py` for fast iterative feedback.
+- Latest pilot baseline: 124 mutants, 117 killed, 7 survived.
+- The remaining 7 survivors in `wifi_core/nmcli_parser.py` are treated as equivalent mutants (default-argument/trampoline semantics and truthiness-equivalent state transitions), so they do not represent observable behavior gaps in runtime code paths.
 
 ## License
 
