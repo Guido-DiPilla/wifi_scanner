@@ -769,7 +769,7 @@ class WifiScannerApp(ctk.CTk):
         return None
 
 
-# ─── Entry point ──────────────────────────────────────────────────────────────
+# Entry point
 
 if __name__ == "__main__":
     try:

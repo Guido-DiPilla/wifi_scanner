@@ -42,7 +42,7 @@ from wifi_core.adapter_service import get_wifi_adapter_info
 from wifi_core.models import WifiNetwork
 
 
-# ── Adapter info ─────────────────────────────────────────────────────────────
+# Adapter info
 
 
 def _center_dialog_on_parent(parent: ctk.CTk, dialog: ctk.CTkToplevel, width: int, height: int) -> None:
@@ -274,7 +274,7 @@ def _build_adapter_content(dialog: ctk.CTkToplevel, info) -> None:
     ).pack(pady=(0, 20))
 
 
-# ── Password / connect dialog ─────────────────────────────────────────────────
+# Password / connect dialog
 
 def show_password_dialog(
     parent: ctk.CTk,
@@ -360,7 +360,7 @@ def show_password_dialog(
     dialog.bind("<Escape>", lambda e: _on_cancel())
 
 
-# ── Error dialog ──────────────────────────────────────────────────────────────
+# Error dialog
 
 def show_error_dialog(parent: ctk.CTk, title: str, message: str) -> None:
     """Show a read-only error dialog with *title* and *message*."""
@@ -425,7 +425,7 @@ def show_error_dialog(parent: ctk.CTk, title: str, message: str) -> None:
     dialog.bind("<Return>", lambda e: dialog.destroy())
 
 
-# ── Hidden network dialog ─────────────────────────────────────────────────────
+# Hidden network dialog
 
 def show_hidden_network_dialog(
     parent: ctk.CTk,
@@ -538,7 +538,7 @@ def show_hidden_network_dialog(
     dialog.bind("<Escape>", lambda e: _on_cancel())
 
 
-# ── Network context menu ─────────────────────────────────────────────────────
+# Network context menu
 
 def show_network_context_menu(
     parent: tk.Misc,

@@ -29,7 +29,7 @@ GREEN = "#00e676"
 YELLOW = "#ffca28"
 RED_COL = "#ef5350"
 
-# ── Layout ────────────────────────────────────────────────────────────────────
+# Layout
 TOPBAR_HEIGHT: int = 56
 STATS_HEIGHT: int = 110
 DETAIL_PANEL_WIDTH: int = 360
@@ -37,16 +37,16 @@ WINDOW_WIDTH: int = 1450
 WINDOW_HEIGHT: int = 950
 MIN_WINDOW_WIDTH: int = 1280
 
-# ── Display limits ────────────────────────────────────────────────────────────
+# Display limits
 MAX_SSID_DISPLAY: int = 28
 MAX_SECURITY_DISPLAY: int = 13
 
-# ── Scanning intervals (seconds) ─────────────────────────────────────────────
+# Scanning intervals (seconds)
 DEFAULT_SCAN_INTERVAL: int = 30
 MIN_SCAN_INTERVAL: int = 1
 MAX_SCAN_INTERVAL: int = 300
 
-# ── Quality-scoring weights (used by WifiNetwork.quality_score) ───────────────
+# Quality-scoring weights (used by WifiNetwork.quality_score)
 SIGNAL_WEIGHT: float = 0.6
 WPA3_BONUS: int = 20
 WPA2_BONUS: int = 10

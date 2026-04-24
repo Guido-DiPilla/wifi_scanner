@@ -712,7 +712,7 @@ class DetailPanel(ctk.CTkFrame):
         content.bind("<Configure>", self._on_detail_content_configure)
         canvas.bind("<Configure>", self._on_detail_canvas_configure)
 
-        # ── Header ──────────────────────────────────────────────────────────
+        # Header
         hdr = ctk.CTkFrame(content, fg_color="transparent")
         hdr.pack(fill="x", padx=20, pady=(20, 8))
 
@@ -788,7 +788,7 @@ class DetailPanel(ctk.CTkFrame):
         )
         self._lbl_dns6.pack(anchor="w")
 
-        # ── Public IP toggle row ─────────────────────────────────────────────
+        # Public IP toggle row
         pip_row = ctk.CTkFrame(hdr, fg_color="transparent")
         pip_row.pack(anchor="w", pady=(6, 0))
         ctk.CTkSwitch(
@@ -825,7 +825,7 @@ class DetailPanel(ctk.CTkFrame):
         )
         self._lbl_vendor_db.pack(anchor="w", pady=(2, 0))
 
-        # ── Signal meter ─────────────────────────────────────────────────────
+        # Signal meter
         sig_frame = ctk.CTkFrame(content, fg_color=BG_ROW, corner_radius=8)
         sig_frame.pack(fill="x", padx=20, pady=8)
 
@@ -863,7 +863,7 @@ class DetailPanel(ctk.CTkFrame):
         )
         self._lbl_quality.pack(pady=(0, 10))
 
-        # ── Signal history chart ──────────────────────────────────────────
+        # Signal history chart
         hist_frame = ctk.CTkFrame(content, fg_color=BG_ROW, corner_radius=8)
         hist_frame.pack(fill="x", padx=20, pady=(0, 8))
 
@@ -884,7 +884,7 @@ class DetailPanel(ctk.CTkFrame):
         self._signal_chart = SignalHistoryChart(hist_frame)
         self._signal_chart.pack(fill="x", padx=4, pady=(0, 8))
 
-        # ── Details grid ─────────────────────────────────────────────────────
+        # Details grid
         grid_frame = ctk.CTkFrame(content, fg_color="transparent")
         grid_frame.pack(fill="x", padx=20, pady=4)
 
@@ -1137,7 +1137,7 @@ class DetailPanel(ctk.CTkFrame):
         return self._current_password
 
 
-# ── Stats panel ──────────────────────────────────────────────────────────────
+# Stats panel
 
 class StatsPanel(ctk.CTkFrame):
     """Statistics and channel-histogram panel shown above the network list."""
