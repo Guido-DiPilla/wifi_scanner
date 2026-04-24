@@ -113,6 +113,39 @@ class NmcliParserTests(unittest.TestCase):
         self.assertEqual(net.security, "Open")
         self.assertEqual(net.bandwidth, "20 MHz")
 
+    def test_parse_scan_line_non_numeric_signal_defaults_to_zero(self):
+        line = (
+            r":Noise:AA\:BB\:CC\:DD\:EE\:70:Infra:6:2437 MHz:130 Mbit/s:notanint:***:WPA2:20 MHz:wlan0:::"
+        )
+        net = parse_scan_line(line, 999.0)
+        self.assertIsNotNone(net)
+        assert net is not None
+        self.assertEqual(net.signal, 0)
+
+    def test_parse_scan_line_with_12_fields_sets_device_only(self):
+        # 12 fields -> device is present, WPA/RSN flags should remain empty.
+        line = (
+            r":Dev12:AA\:BB\:CC\:DD\:EE\:71:Infra:1:2412 MHz:72 Mbit/s:51:**:WPA2:20 MHz:wlan9"
+        )
+        net = parse_scan_line(line, 1.0)
+        self.assertIsNotNone(net)
+        assert net is not None
+        self.assertEqual(net.device, "wlan9")
+        self.assertEqual(net.wpa_flags, "")
+        self.assertEqual(net.rsn_flags, "")
+
+    def test_parse_scan_line_with_13_fields_sets_wpa_flags_only(self):
+        # 13 fields -> wpa_flags is present, rsn_flags should remain empty.
+        line = (
+            r":Dev13:AA\:BB\:CC\:DD\:EE\:72:Infra:1:2412 MHz:72 Mbit/s:51:**:WPA2:20 MHz:wlan9:pair_ccmp"
+        )
+        net = parse_scan_line(line, 1.0)
+        self.assertIsNotNone(net)
+        assert net is not None
+        self.assertEqual(net.device, "wlan9")
+        self.assertEqual(net.wpa_flags, "pair_ccmp")
+        self.assertEqual(net.rsn_flags, "")
+
 
 if __name__ == "__main__":
     unittest.main()
