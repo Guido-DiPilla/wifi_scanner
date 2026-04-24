@@ -1,0 +1,4 @@
+wlan0:wifi:disconnected
+wlp2s0:wifi:connecting
+eth0:ethernet:connected
+malformed-line

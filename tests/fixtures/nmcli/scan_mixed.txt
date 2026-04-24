@@ -1,0 +1,5 @@
+*:CafeWiFi:AA\:BB\:CC\:DD\:EE\:01:Infra:6:2437 MHz:144 Mbit/s:45:***:WPA2:40 MHz:wlan0:pair_ccmp:pair_ccmp
+:DuplicateEntry:AA\:BB\:CC\:DD\:EE\:01:Infra:6:2437 MHz:144 Mbit/s:78:****:WPA2:40 MHz:wlan0:pair_ccmp:pair_ccmp
+:OfficeNet:AA\:BB\:CC\:DD\:EE\:02:Infra:6:2437 MHz:300 Mbit/s:80:****:WPA2 WPA3:80 MHz:wlan0:sae:sae
+too:short
+:Lab5G:AA\:BB\:CC\:DD\:EE\:03:Infra:36:5180 MHz:866 Mbit/s:67:****:WPA2:80 MHz:wlan0:pair_ccmp:pair_ccmp

@@ -30,6 +30,15 @@ def _mac_to_str(mac_int: int) -> str:
     return ":".join(f"{(mac_int >> shift) & 0xFF:02X}" for shift in (40, 32, 24, 16, 8, 0))
 
 
+def _is_int_like(raw: str) -> bool:
+    """Return True when Python int() accepts the given string."""
+    try:
+        int(raw)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
 class NmcliParserPropertyTests(unittest.TestCase):
     @settings(max_examples=80)
     @given(st.lists(st.text(alphabet=st.characters(blacklist_characters=":\\"), max_size=12), min_size=1, max_size=8))
@@ -49,7 +58,7 @@ class NmcliParserPropertyTests(unittest.TestCase):
         self.assertEqual(_to_int(str(value), default=99), value)
 
     @settings(max_examples=120)
-    @given(st.text(min_size=1).filter(lambda s: s.strip("+-").isdigit() is False))
+    @given(st.text(min_size=1).filter(lambda s: not _is_int_like(s)))
     def test_to_int_returns_default_for_non_numeric(self, raw: str) -> None:
         self.assertEqual(_to_int(raw, default=123), 123)
 
