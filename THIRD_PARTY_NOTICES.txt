@@ -1,0 +1,31 @@
+Third-Party Notices
+===================
+
+This project does not vendor third-party source code. The following runtime
+and development dependencies are distributed separately and retain their own
+licenses. This file is intended for source and release bundles that include the
+project metadata.
+
+customtkinter
+- License declared by package metadata: Creative Commons Zero v1.0 Universal
+- Upstream: https://customtkinter.tomschimansky.com
+
+Pillow
+- License expression declared by package metadata: MIT-CMU
+- Upstream: https://python-pillow.github.io
+
+pytest
+- License expression declared by package metadata: MIT
+- Upstream: https://docs.pytest.org
+
+pytest-cov
+- License expression declared by package metadata: MIT
+- Upstream: https://pytest-cov.readthedocs.io
+
+hypothesis
+- License expression declared by package metadata: MPL-2.0
+- Upstream: https://hypothesis.works
+
+mutmut
+- License expression declared by package metadata: BSD-3-Clause
+- Upstream: https://github.com/boxed/mutmut

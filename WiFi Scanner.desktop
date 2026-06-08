@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WiFi Scanner
+Comment=Launch WiFi Scanner
+Exec=/home/guido/Dropbox/Programming/Python/wifi_scanner/run_wifi_scanner.sh
+Path=/home/guido/Dropbox/Programming/Python/wifi_scanner
+Icon=/home/guido/Dropbox/Programming/Python/wifi_scanner/wifi.png
+Terminal=false
+Categories=Network;Utility;
+StartupNotify=true

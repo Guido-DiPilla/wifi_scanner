@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if [[ "${SKIP_VERSION_BUMP:-}" == "1" ]]; then
+  exit 0
+fi
+
+# Prevent infinite loop: when the current HEAD is already an auto-bump commit, allow push.
+head_subject="$(git log -1 --pretty=%s 2>/dev/null || true)"
+if [[ "$head_subject" == chore\(version\):\ auto-bump* ]]; then
+  exit 0
+fi
+
+ranges=()
+has_push_commits=0
+
+is_docs_meta_path() {
+  local path="$1"
+  case "$path" in
+    *.md|LICENSE|docs/*|.github/*|screenshots/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Skip deleted refs.
+  if [[ "$local_sha" =~ ^0+$ ]]; then
+    continue
+  fi
+
+  has_push_commits=1
+
+  # New remote ref (no upstream SHA) cannot be ranged precisely; use local SHA commit message.
+  if [[ "$remote_sha" =~ ^0+$ ]]; then
+    ranges+=("$local_sha")
+  else
+    ranges+=("${remote_sha}..${local_sha}")
+  fi
+done
+
+if [[ $has_push_commits -eq 0 ]]; then
+  exit 0
+fi
+
+# Skip auto-bump when all pushed file changes are docs/meta only.
+has_files=0
+has_non_docs_changes=0
+for r in "${ranges[@]}"; do
+  if [[ "$r" == *".."* ]]; then
+    while IFS= read -r path; do
+      [[ -z "$path" ]] && continue
+      has_files=1
+      if ! is_docs_meta_path "$path"; then
+        has_non_docs_changes=1
+        break
+      fi
+    done < <(git diff --name-only "$r")
+  else
+    while IFS= read -r path; do
+      [[ -z "$path" ]] && continue
+      has_files=1
+      if ! is_docs_meta_path "$path"; then
+        has_non_docs_changes=1
+        break
+      fi
+    done < <(git show --name-only --pretty="" "$r")
+  fi
+
+  if [[ $has_non_docs_changes -eq 1 ]]; then
+    break
+  fi
+done
+
+if [[ $has_files -eq 1 && $has_non_docs_changes -eq 0 ]]; then
+  echo "pre-push: docs/meta-only changes detected; skipping version auto-bump." >&2
+  exit 0
+fi
+
+# If VERSION is already staged/modified in this push, don't auto-bump again.
+if ! git diff --quiet -- VERSION || ! git diff --cached --quiet -- VERSION; then
+  exit 0
+fi
+
+# Run the bump script and capture output for commit message.
+cmd=(python3 scripts/auto_bump_version.py --mode auto)
+for r in "${ranges[@]}"; do
+  cmd+=(--range "$r")
+done
+
+output="$(${cmd[@]})"
+bump_kind="$(printf '%s\n' "$output" | awk -F= '/^bump_kind=/{print $2}')"
+new_version="$(printf '%s\n' "$output" | awk -F= '/^new_version=/{print $2}')"
+
+if [[ -z "$new_version" || -z "$bump_kind" ]]; then
+  echo "pre-push: failed to compute version bump" >&2
+  exit 1
+fi
+
+git add VERSION
+git commit -m "chore(version): auto-bump to ${new_version} (${bump_kind})"
+
+echo "pre-push: created version bump commit ${new_version}." >&2
+echo "pre-push: push aborted intentionally so the new commit is included." >&2
+echo "pre-push: re-run 'git push'." >&2
+exit 1

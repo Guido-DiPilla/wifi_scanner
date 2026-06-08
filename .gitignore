@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.mutmut-cache/
+mutants/
+
+# Type checkers / linters
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App runtime cache (contains downloaded IEEE OUI data — regenerated automatically)
+.cache/
+
+# Secrets / credentials — never commit these
+*.env
+.env.*
+*.pem
+*.key
+*.crt
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+secrets.py
+credentials.py
+local_settings.py
+
+# Local app/user files
+*.local
+*.bak
+*.tmp
+
+# Logs
+*.log
