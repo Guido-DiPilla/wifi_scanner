@@ -132,6 +132,8 @@ Vendor resolution is local and source-priority based:
 
 Notes:
 - The app reads cached IEEE files from `~/.cache/wifi_scanner/ieee/` when present.
+- After the UI is shown, the app starts a background refresh for newer IEEE mappings.
+- Updated mappings are applied only when refresh succeeds; on refresh failure, existing mappings remain in use.
 - It does not require network access for normal lookups.
 - If no vendor source is available, vendor values fall back to `Unknown`.
 
