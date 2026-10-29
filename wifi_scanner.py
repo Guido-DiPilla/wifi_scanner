@@ -23,6 +23,7 @@ from wifi_core.connection_service import (
 )
 from wifi_core.models import WifiNetwork
 from wifi_core.scanner_service import get_saved_password, scan_wifi
+from wifi_core.vendor_lookup import refresh_authoritative_ieee_cache, reload_vendor_database
 from config import (
     __version__,
     ACCENT,
@@ -165,6 +166,7 @@ class WifiScannerApp(ctk.CTk):
         self._countdown_job = None
         self._scan_watchdog_job = None
         self._scan_started_at: float | None = None
+        self._vendor_refresh_in_flight = False
         self._dismiss_context_menu: Callable[[], None] = lambda: None
         # BSSID → deque of (timestamp, signal%) — capped at 60 samples (~30 min at 30 s)
         self._signal_history: dict[str, deque[tuple[float, int]]] = {}
@@ -172,6 +174,7 @@ class WifiScannerApp(ctk.CTk):
         self._build_ui()
         self._setup_keyboard_shortcuts()
         self._start_scan()
+        self.after_idle(self._start_vendor_db_refresh)
 
     # ── UI construction ──────────────────────────────────────────────────────
 
@@ -739,6 +742,41 @@ class WifiScannerApp(ctk.CTk):
     def _start_background_task(self, target: Callable[[], None]) -> None:
         """Run a no-arg callable on a daemon worker thread."""
         threading.Thread(target=target, daemon=True).start()
+
+    def _start_vendor_db_refresh(self) -> None:
+        """Refresh vendor mappings in the background after UI is visible."""
+        if getattr(self, "_vendor_refresh_in_flight", False):
+            return
+        self._vendor_refresh_in_flight = True
+        self._start_background_task(self._refresh_vendor_db_async)
+
+    def _refresh_vendor_db_async(self) -> None:
+        """Fetch latest IEEE mappings without blocking startup."""
+        refreshed = False
+        try:
+            refreshed = refresh_authoritative_ieee_cache(force=True, timeout=30.0)
+            if refreshed:
+                reload_vendor_database(force_refresh=False)
+        except Exception:
+            refreshed = False
+
+        self.after(0, self._on_vendor_db_refresh_complete, refreshed)
+
+    def _on_vendor_db_refresh_complete(self, refreshed: bool) -> None:
+        """Apply updated vendor mappings when background refresh succeeds."""
+        self._vendor_refresh_in_flight = False
+        if not refreshed:
+            return
+
+        self._invalidate_cached_vendor_names()
+        self._render_list()
+        self._refresh_selected_network_details(getattr(self, "_networks", []))
+        self._update_filter_status()
+
+    def _invalidate_cached_vendor_names(self) -> None:
+        """Clear cached vendor properties so lookups use the refreshed database."""
+        for net in getattr(self, "_networks", []):
+            net.__dict__.pop("vendor", None)
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
