@@ -95,6 +95,8 @@ The detail panel shows properties for the selected network, including:
 - Congestion count and quality score.
 - Device and last seen time.
 
+Detail value fields are intentionally widened so long vendor/manufacturer names are visible without premature truncation.
+
 The password value is masked in the detail row and can be revealed from a temporary popup when available.
 
 ### Connection Actions

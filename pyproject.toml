@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wifi-scanner"
 description = "Linux Wi-Fi scanner using NetworkManager with customtkinter GUI"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{name = "Guido DiPilla"}]
 license = {text = "MIT"}
 readme = "README.md"

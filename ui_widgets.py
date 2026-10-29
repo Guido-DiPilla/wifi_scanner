@@ -688,7 +688,7 @@ class DetailPanel(ctk.CTkFrame):
             font=(FONT_BODY, 10, "bold"),
             text_color=TEXT_MAIN,
             bg_color=BG_CARD,
-            width=22,
+            width=50,
             wrap="none",
         )
         lbl.pack(side="left", padx=(8, 0))
