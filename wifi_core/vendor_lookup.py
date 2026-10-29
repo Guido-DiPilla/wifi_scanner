@@ -36,11 +36,14 @@ _SYSTEM_IEEE_OUI_PATHS: tuple[Path, ...] = (
 
 _CACHE_DIR = Path.home() / ".cache" / "wifi_scanner" / "ieee"
 
+_HTTP_HEADERS = {
+    "User-Agent": "wifi_scanner/1.0 (+https://github.com/Guido-DiPilla/wifi_scanner)",
+    "Accept": "text/plain,*/*;q=0.8",
+}
+
 _IEEE_REMOTE_SOURCES: tuple[tuple[str, str], ...] = (
     ("oui.txt", "https://standards-oui.ieee.org/oui/oui.txt"),
     ("oui36.txt", "https://standards-oui.ieee.org/oui36/oui36.txt"),
-    ("mam.txt", "https://standards-oui.ieee.org/mam/mam.txt"),
-    ("iab.txt", "https://standards-oui.ieee.org/iab/iab.txt"),
 )
 
 
@@ -75,23 +78,26 @@ def refresh_authoritative_ieee_cache(force: bool = False, timeout: float = 20.0)
         return False
 
     _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    refreshed = False
     for name, url in _IEEE_REMOTE_SOURCES:
         dst = _CACHE_DIR / name
         try:
-            with urllib.request.urlopen(url, timeout=timeout) as response:
+            request = urllib.request.Request(url, headers=_HTTP_HEADERS)
+            with urllib.request.urlopen(request, timeout=timeout) as response:
                 payload = response.read()
         except (OSError, urllib.error.URLError, TimeoutError):
-            return False
+            continue
 
         text = payload.decode("utf-8", errors="ignore")
         if "(hex)" not in text and "(base 16)" not in text:
-            return False
+            continue
 
-        with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", dir=_CACHE_DIR) as tmp:
-            tmp.write(text)
+        with tempfile.NamedTemporaryFile("wb", delete=False, dir=_CACHE_DIR) as tmp:
+            tmp.write(payload)
             tmp_path = Path(tmp.name)
         tmp_path.replace(dst)
-    return True
+        refreshed = True
+    return refreshed
 
 
 def _parse_prefix_token(raw: str) -> tuple[int, int, int] | None:

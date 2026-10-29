@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+import urllib.request
 from pathlib import Path
 from unittest.mock import MagicMock
 from unittest.mock import patch
@@ -79,6 +80,60 @@ class VendorLookupTests(unittest.TestCase):
             self.assertTrue(refreshed)
             self.assertTrue(cached_file.exists())
             self.assertIn("(hex)", cached_file.read_text(encoding="utf-8"))
+
+    def test_refresh_authoritative_ieee_cache_partial_success(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_dir = Path(tmpdir)
+            remote_sources = (
+                ("oui.txt", "https://example.com/oui.txt"),
+                ("oui36.txt", "https://example.com/oui36.txt"),
+            )
+
+            good_response = MagicMock()
+            good_response.read.return_value = b"AA-BB-CC   (hex)\tVendor One\n"
+            good_response.__enter__.return_value = good_response
+            good_response.__exit__.return_value = False
+
+            def fake_urlopen(request, timeout):
+                assert isinstance(request, urllib.request.Request)
+                if request.full_url.endswith("/oui.txt"):
+                    raise OSError("network down")
+                return good_response
+
+            with patch.object(vendor_lookup, "_CACHE_DIR", cache_dir), \
+                 patch.object(vendor_lookup, "_IEEE_REMOTE_SOURCES", remote_sources), \
+                 patch("wifi_core.vendor_lookup.urllib.request.urlopen", side_effect=fake_urlopen):
+                refreshed = vendor_lookup.refresh_authoritative_ieee_cache(force=True)
+
+            self.assertTrue(refreshed)
+            self.assertFalse((cache_dir / "oui.txt").exists())
+            self.assertTrue((cache_dir / "oui36.txt").exists())
+
+    def test_refresh_authoritative_ieee_cache_sends_user_agent_header(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_dir = Path(tmpdir)
+            remote_sources = (("oui.txt", "https://example.com/oui.txt"),)
+
+            response = MagicMock()
+            response.read.return_value = b"AA-BB-CC   (hex)\tVendor One\n"
+            response.__enter__.return_value = response
+            response.__exit__.return_value = False
+
+            seen_headers: list[str] = []
+
+            def fake_urlopen(request, timeout):
+                assert isinstance(request, urllib.request.Request)
+                seen_headers.append(request.headers.get("User-agent", ""))
+                return response
+
+            with patch.object(vendor_lookup, "_CACHE_DIR", cache_dir), \
+                 patch.object(vendor_lookup, "_IEEE_REMOTE_SOURCES", remote_sources), \
+                 patch("wifi_core.vendor_lookup.urllib.request.urlopen", side_effect=fake_urlopen):
+                refreshed = vendor_lookup.refresh_authoritative_ieee_cache(force=True)
+
+            self.assertTrue(refreshed)
+            self.assertTrue(seen_headers)
+            self.assertIn("wifi_scanner/1.0", seen_headers[0])
 
     def test_refresh_authoritative_ieee_cache_failure_paths(self):
         with tempfile.TemporaryDirectory() as tmpdir:
