@@ -324,12 +324,41 @@ class VendorLookupTests(unittest.TestCase):
             self.assertEqual(vendor_lookup.get_vendor("F8:73:1A:8A:22:11"), "Vendor28")
             self.assertEqual(vendor_lookup.get_vendor("F8:73:1A:00:22:11"), "Vendor24")
 
+    def test_get_vendor_fallbacks_by_clearing_local_admin_bit(self):
+        with patch.object(vendor_lookup, "_OUI_DB", {"F0:18:98": "Apple"}), \
+             patch.object(vendor_lookup, "_OUI_PREFIX_DB", []):
+            # F2 has the local-admin bit set; clearing it yields F0.
+            self.assertEqual(vendor_lookup.get_vendor("F2:18:98:12:34:56"), "Apple")
+
+    def test_get_vendor_keeps_unknown_when_local_admin_fallback_misses(self):
+        with patch.object(vendor_lookup, "_OUI_DB", {}), \
+             patch.object(vendor_lookup, "_OUI_PREFIX_DB", []):
+            self.assertEqual(vendor_lookup.get_vendor("F2:18:98:12:34:56"), "Unknown")
+
     def test_get_vendor_returns_unknown_for_malformed_bssid(self):
         with patch.object(vendor_lookup, "_OUI_DB", {"AA:BB:CC": "VendorX"}), \
              patch.object(vendor_lookup, "_OUI_PREFIX_DB", []):
             self.assertEqual(vendor_lookup.get_vendor("invalid"), "Unknown")
             self.assertEqual(vendor_lookup.get_vendor("AA:BB:CC"), "Unknown")
             self.assertEqual(vendor_lookup.get_vendor(""), "Unknown")
+
+    def test_get_vendor_hint_for_private_hotspot_with_iphone_ssid(self):
+        self.assertEqual(
+            vendor_lookup.get_vendor_hint("F2:18:98:12:34:56", "Guido's iPhone"),
+            "Private/Randomized MAC",
+        )
+
+    def test_get_vendor_hint_for_private_mac_non_iphone(self):
+        self.assertEqual(
+            vendor_lookup.get_vendor_hint("F2:18:98:12:34:56", "Some Hotspot"),
+            "Private/Randomized MAC",
+        )
+
+    def test_get_vendor_hint_for_globally_administered_mac(self):
+        self.assertEqual(
+            vendor_lookup.get_vendor_hint("F0:18:98:12:34:56", "Guido's iPhone"),
+            "Unknown",
+        )
 
     def test_parse_ieee_base16_range_with_current_oui24(self):
         oui24 = 0xAABBCC

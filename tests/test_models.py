@@ -100,6 +100,12 @@ class WifiNetworkModelTests(unittest.TestCase):
             net = _net(bssid="00:11:22:33:44:55")
             self.assertEqual(net.vendor, "TP-Link")
 
+    def test_vendor_property_uses_hint_when_lookup_unknown(self):
+        with patch("wifi_core.models.get_vendor", return_value="Unknown"), \
+             patch("wifi_core.models.get_vendor_hint", return_value="Private/Randomized MAC"):
+            net = _net(ssid="My iPhone", bssid="F2:18:98:12:34:56")
+            self.assertEqual(net.vendor, "Private/Randomized MAC")
+
     def test_quality_score_low_congestion_penalty(self):
         # congestion=2 > CONGESTION_THRESHOLD_LOW (1) hits the low-penalty branch
         with_low = _net(signal=80, security="WPA2", congestion=2, bandwidth="80 MHz")

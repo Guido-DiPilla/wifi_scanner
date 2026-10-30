@@ -46,6 +46,8 @@ _IEEE_REMOTE_SOURCES: tuple[tuple[str, str], ...] = (
     ("oui36.txt", "https://standards-oui.ieee.org/oui36/oui36.txt"),
 )
 
+_LOCAL_ADMIN_MASK = 0x020000000000
+
 
 def _normalize_oui(raw: str) -> str | None:
     """Normalize raw OUI token into canonical AA:BB:CC form."""
@@ -312,6 +314,19 @@ def _best_prefix_vendor(mac_int: int) -> str | None:
     return None
 
 
+def _lookup_vendor_for_mac_int(mac_int: int) -> str | None:
+    """Resolve vendor by exact OUI first, then longest-prefix match."""
+    exact = _OUI_DB.get(_mac_int_to_oui(mac_int))
+    if exact:
+        return exact
+    return _best_prefix_vendor(mac_int)
+
+
+def _is_locally_administered_mac(mac_int: int) -> bool:
+    """Return True when the local-admin bit is set in the first MAC octet."""
+    return bool(mac_int & _LOCAL_ADMIN_MASK)
+
+
 _OUI_DB: dict[str, str]
 _OUI_PREFIX_DB: list[PrefixEntry]
 _OUI_DB_PATH: Path | None
@@ -347,8 +362,27 @@ def get_vendor(bssid: str) -> str:
     if mac_int is None:
         return "Unknown"
 
-    exact = _OUI_DB.get(_mac_int_to_oui(mac_int))
-    if exact:
-        return exact
+    resolved = _lookup_vendor_for_mac_int(mac_int)
+    if resolved:
+        return resolved
 
-    return _best_prefix_vendor(mac_int) or "Unknown"
+    # Hotspot and private-addressing devices often set the local-admin bit.
+    # Clearing it can recover the original global OUI vendor.
+    if mac_int & _LOCAL_ADMIN_MASK:
+        resolved = _lookup_vendor_for_mac_int(mac_int & ~_LOCAL_ADMIN_MASK)
+        if resolved:
+            return resolved
+
+    return "Unknown"
+
+
+def get_vendor_hint(bssid: str, ssid: str = "") -> str:
+    """Return a non-authoritative vendor hint for private/local MAC cases."""
+    mac_int = _bssid_to_mac_int(bssid)
+    if mac_int is None:
+        return "Unknown"
+
+    if not _is_locally_administered_mac(mac_int):
+        return "Unknown"
+
+    return "Private/Randomized MAC"

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from functools import cached_property
 import time
 
-from wifi_core.vendor_lookup import get_vendor
+from wifi_core.vendor_lookup import get_vendor, get_vendor_hint
 from config import (
     BANDWIDTH_BONUS_160,
     BANDWIDTH_BONUS_40,
@@ -51,7 +51,10 @@ class WifiNetwork:
     @cached_property
     def vendor(self) -> str:
         """Return vendor/manufacturer name resolved from BSSID prefix."""
-        return get_vendor(self.bssid)
+        vendor = get_vendor(self.bssid)
+        if vendor != "Unknown":
+            return vendor
+        return get_vendor_hint(self.bssid, self.ssid)
 
     @property
     def signal_dbm(self) -> str:
